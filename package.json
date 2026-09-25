@@ -1,0 +1,35 @@
+{
+  "name": "holloway-records",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Holloway Records — an independent record shop on the web. Turntable hover, needle-drop previews, Stripe checkout.",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm run typecheck"
+  },
+  "dependencies": {
+    "@stripe/stripe-js": "^7.9.0",
+    "next": "16.3.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "stripe": "^22.6.2"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^22.15.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "^9.25.0",
+    "eslint-config-next": "16.3.6",
+    "tailwindcss": "^4.3.3",
+    "typescript": "5.9.3"
+  }
+}
