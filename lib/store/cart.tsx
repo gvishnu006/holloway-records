@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 
 import { RECORDS, type RecordItem } from '../catalog'
+import { saveReceipt, type Receipt } from './receipt'
 
 /**
  * The bag.
@@ -217,8 +218,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           lines: detailed.map((d) => ({ slug: d.record.slug, qty: d.qty })),
         }),
       })
-      const data: { url?: string; error?: string } = await res.json()
+      const data: { url?: string; error?: string; order?: Receipt } = await res.json()
       if (!res.ok || !data.url) throw new Error(data.error ?? 'The till would not take it. Try again.')
+      // A demo receipt comes back with the redirect, because the ledger that
+      // holds it does not survive a serverless hop.
+      if (data.order) saveReceipt(data.order)
       window.location.href = data.url
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong at the till.')

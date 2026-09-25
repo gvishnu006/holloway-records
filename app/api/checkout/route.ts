@@ -59,10 +59,16 @@ export async function POST(request: Request) {
     }
     recordOrder(order)
 
+    // The receipt comes back with the redirect, not just a reference. A
+    // serverless platform will hand the next request to a different instance
+    // with a cold ledger, so a demo order the browser is about to ask for may
+    // simply not be there. Carrying it in the response means the customer
+    // always sees their receipt; sessionStorage keeps it for a reload.
     return NextResponse.json({
       url: `${base}/order?ref=${encodeURIComponent(reference)}&demo=1`,
       reference,
       demo: true,
+      order,
     })
   }
 

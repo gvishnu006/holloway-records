@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 
 import { money } from '@/lib/format'
+import { readReceipt } from '@/lib/store/receipt'
 
 /**
  * "Where is my order?"
@@ -56,18 +57,26 @@ export function OrderLookup({ initialRef = '', initialOrder, initialMissing }: P
     return { kind: 'idle' }
   })
 
-  // The server looked, and did not find it. Before saying so, ask the API: a
-  // demo order was written by the checkout handler's own ledger, which is a
-  // different server bundle from this page's.
+  // The server looked, and did not find it. Two other places might know:
+  // the browser kept the demo receipt from the checkout response, and the API
+  // shares a ledger with the checkout handler. Ask both before saying no.
   useEffect(() => {
     if (!initialRef || initialOrder || !initialMissing) return
     let live = true
 
-    fetch(`/api/orders?ref=${encodeURIComponent(initialRef)}`, { cache: 'no-store' })
-      .then((res) => (res.status === 404 ? Promise.resolve(null) : res.json()))
-      .then((data: { order?: OrderPayload; error?: string } | null) => {
+    // Resolving through a promise keeps every setState out of the effect body,
+    // even the one that is already answered.
+    const fromBrowser = Promise.resolve(readReceipt(initialRef))
+
+    fromBrowser
+      .then((cached) =>
+        cached ? cached : fetch(`/api/orders?ref=${encodeURIComponent(initialRef)}`, { cache: 'no-store' })
+          .then((res) => (res.status === 404 ? Promise.resolve(null) : res.json()))
+          .then((data: { order?: OrderPayload; error?: string } | null) => data?.order ?? null),
+      )
+      .then((order: OrderPayload | null) => {
         if (!live) return
-        if (data?.order) return setState({ kind: 'found', order: data.order })
+        if (order) return setState({ kind: 'found', order })
         setState({ kind: 'missing' })
       })
       .catch(() => {
